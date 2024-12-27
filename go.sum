@@ -1,0 +1,6 @@
+github.com/Binject/debug v0.0.0-20230508195519-26db73212a7a h1:4c0nc0krv8eh7gD809n+swLaCuFyHpxdrxwx0ZmHvBw=
+github.com/Binject/debug v0.0.0-20230508195519-26db73212a7a/go.mod h1:QzgxDLY/qdKlvnbnb65eqTedhvQPbaSP2NqIbcuKvsQ=
+github.com/f1zm0/acheron v1.0.0 h1:TuKoCH6/ei6++FYKDxfU3u/7HfEbGML2e8XU96FXPxY=
+github.com/f1zm0/acheron v1.0.0/go.mod h1:AoZubNHFFrqHu7cV+DJYG4GUg+Z6yMkzI34o9p0cPKs=
+golang.org/x/sys v0.28.0 h1:Fksou7UEQUWlKvIdsqzJmUmCX3cZuD2+P3XyyzwMhlA=
+golang.org/x/sys v0.28.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
