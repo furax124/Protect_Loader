@@ -1,5 +1,5 @@
 
-![Logo](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/th5xamgrr6se0x5ro4g6.png)
+![Logo](https://github.com/furax124/Protect_Loader/blob/main/GUI/LOGO.png)
 
 # Protect Loader
 
@@ -57,7 +57,7 @@ Garble -literals -seed=random -tiny build -ldflags="-w -s -H=windowsgui -buildid
 
 ## Screenshots of the GUI
 
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+![App Screenshot](https://github.com/furax124/Protect_Loader/blob/main/GUI/Preview.png)
 
 ## Authors
 
