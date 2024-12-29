@@ -48,6 +48,10 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 Garble -literals -seed=random -tiny build -ldflags="-w -s -H=windowsgui -buildid=" -trimpath
 ```
 
+## Notes:
+
+- Protect Loader actually bypass runtime avast detection as 29/12/2024
+
 ## Credit
 
  - [Hooka Shellcode loader](https://github.com/D3Ext/Hooka) - for the code i use 
