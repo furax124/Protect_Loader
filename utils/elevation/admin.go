@@ -43,7 +43,7 @@ func Elevate() error {
 	exePtr, _ := syscall.UTF16PtrFromString(exe)
 	argPtr, _ := syscall.UTF16PtrFromString(" " + syscall.EscapeArg(args))
 
-	var showCmd int32 = 1 // SW_SHOWNORMAL
+	var showCmd int32 = 1
 
 	err = windows.ShellExecute(0, verbPtr, exePtr, argPtr, nil, showCmd)
 	if err != nil {
