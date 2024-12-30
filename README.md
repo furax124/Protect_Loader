@@ -60,7 +60,7 @@ Garble -literals -seed=random -tiny build -ldflags="-w -s -H=windowsgui -buildid
 
 ## Screenshots of the GUI
 
-![App Screenshot](https://github.com/furax124/Protect_Loader/blob/main/GUI/Preview.png)
+![App Screenshot](https://github.com/furax124/Protect_Loader/blob/main/GUI/Assets/Preview.png)
 
 ## Authors
 
