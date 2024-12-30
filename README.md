@@ -1,5 +1,5 @@
 
-![Logo](https://github.com/furax124/Protect_Loader/blob/main/GUI/LOGO.png)
+![Logo](https://github.com/furax124/Protect_Loader/blob/main/GUI/Assets/LOGO.png)
 
 # Protect Loader
 
