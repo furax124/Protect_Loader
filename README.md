@@ -21,7 +21,7 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 
 ## Roadmap
 - [X] Create a GUI with Fyne
-- [ ] Rework it to be more user-friendly
+- [ ] Rework it to be more user-friendly (need to add option and bunch of things)
 - [X] Make the code obfuscation with garble
 - [X] Use indirect syscalls
 - [X] Implement techniques to bypass AMSI and EDR
