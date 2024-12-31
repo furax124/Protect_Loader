@@ -10,7 +10,8 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 - **Shellcode Loading**: Secure shellcode loading using apc method.
 - **GUI**: User interface created with Fyne.
 - **Obfuscation**: Code obfuscation with garble.
-- **Indirect Syscalls**: Use of indirect syscalls for evasion.
+- **Indirect Syscalls**: Use of indirect syscalls by acheron for evasion.
+- **Api ashing**: Acheron package have a integrated api hashing for evasion
 - **Bypass AMSI and EDR**: Techniques to bypass AMSI and EDR.
 - **Admin Privileges Check**: Check if admin privileges are enabled.
 - **Random Sleep**: Adding random delays.
