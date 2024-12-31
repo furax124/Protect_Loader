@@ -52,7 +52,7 @@ Garble -literals -seed=random -tiny build -ldflags="-w -s -H=windowsgui -buildid
 ## Notes:
 
 - Protect Loader actually bypass runtime avast detection as 29/12/2024.
-- In the GUI and subfolder there is a lot of PE file (exe) if you don't trust them,feel free to download them by their official repo.
+- In the GUI and subfolder there is a lot of PE file (exe) if you don't trust them,feel free to download them from their official repo.
 
 ## Credit
 
