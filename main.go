@@ -111,14 +111,6 @@ func main() {
 	}
 	log.Println("[+] Successfully terminated Event Log threads")
 
-	//enable ACG protection
-	//fmt.Println("[*] Enabling ACG protection")
-	//if err := ACG.EnableACG(); err != nil {
-	//	log.Fatalf("[-] Failed to Enable ACG guard protection: %v", err)
-	//	return
-	//}
-	//fmt.Println("[+] ACG protection enabled")
-
 	// Block non-Microsoft-signed DLLs
 	fmt.Println("[*] Blocking non-Microsoft-signed DLLs")
 	if err := DLLBlocker.BlockDLLs(); err != nil {
