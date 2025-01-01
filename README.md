@@ -36,7 +36,6 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 - [ ] Polymorphic code
 - [ ] Remote shellcode to avoid detection
 - [ ] Encrypt XOR and AES keys in `main.go`
-- [ ] ACG protection Need to be fixed
 - [ ] Sign shellcode and loader with a certificate
 
 
