@@ -4,6 +4,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -216,6 +217,25 @@ func cleanupFiles(files []string, logLabel *widget.Label) {
 	}
 }
 
+func encryptKeys(aesKeyHex, xorKeyHex, encryptionKey string) (string, string, error) {
+	encryptionKeyBytes, err := hex.DecodeString(encryptionKey)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to decode encryption key: %v", err)
+	}
+
+	encryptedAESKey, err := xorEncrypt([]byte(aesKeyHex), encryptionKeyBytes)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to encrypt AES key: %v", err)
+	}
+
+	encryptedXORKey, err := xorEncrypt([]byte(xorKeyHex), encryptionKeyBytes)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to encrypt XOR key: %v", err)
+	}
+
+	return hex.EncodeToString(encryptedAESKey), hex.EncodeToString(encryptedXORKey), nil
+}
+
 func encryptData(plaintext []byte, statusLabel *widget.Label, logLabel *widget.Label) {
 	aesKey, aesKeyHex, err := generateKey(32)
 	if err != nil {
@@ -260,7 +280,29 @@ func encryptData(plaintext []byte, statusLabel *widget.Label, logLabel *widget.L
 	statusLabel.SetText("[+] Encryption successful and saved to ../encrypted_loader.bin")
 	logLabel.SetText(logLabel.Text + "[+] Encryption successful and saved to ../encrypted_loader.bin\n")
 
-	replaceKeysInTemplate(xorKeyHex, aesKeyHex, statusLabel, logLabel)
+	_, reEncryptKeyHex, err := generateKey(16)
+	if err != nil {
+		statusLabel.SetText(fmt.Sprintf("[-] Failed to generate re-encryption key: %v", err))
+		logLabel.SetText(fmt.Sprintf("[-] Failed to generate re-encryption key: %v\n", err))
+		return
+	}
+
+	encryptedAESKey, encryptedXORKey, err := encryptKeys(aesKeyHex, xorKeyHex, reEncryptKeyHex)
+	if err != nil {
+		statusLabel.SetText(fmt.Sprintf("[-] Failed to encrypt keys: %v", err))
+		logLabel.SetText(fmt.Sprintf("[-] Failed to encrypt keys: %v\n", err))
+		return
+	}
+	logLabel.SetText(logLabel.Text + "[+] Keys encrypted successfully\n")
+
+	logLabel.SetText(logLabel.Text + fmt.Sprintf("[+] Length of AES key: %d\n", len(aesKey)))
+	logLabel.SetText(logLabel.Text + fmt.Sprintf("[+] Length of XOR key: %d\n", len(xorKey)))
+
+	logLabel.SetText(logLabel.Text + "[+] Encrypted AES Key: " + encryptedAESKey + "\n")
+	logLabel.SetText(logLabel.Text + "[+] Encrypted XOR Key: " + encryptedXORKey + "\n")
+	logLabel.SetText(logLabel.Text + "[+] Encryption Key of XOR: " + reEncryptKeyHex + "\n")
+
+	replaceKeysInTemplate(encryptedAESKey, encryptedXORKey, reEncryptKeyHex, statusLabel, logLabel)
 }
 
 func generateKey(length int) ([]byte, string, error) {
@@ -271,7 +313,7 @@ func generateKey(length int) ([]byte, string, error) {
 	return key, fmt.Sprintf("%x", key), nil
 }
 
-func replaceKeysInTemplate(xorKeyHex, aesKeyHex string, statusLabel, logLabel *widget.Label) {
+func replaceKeysInTemplate(encryptedAESKey, encryptedXORKey, reEncryptKeyHex string, statusLabel, logLabel *widget.Label) {
 	templateContent, err := ioutil.ReadFile("../template.txt")
 	if err != nil {
 		statusLabel.SetText(fmt.Sprintf("[-] Failed to read template file: %v", err))
@@ -279,8 +321,20 @@ func replaceKeysInTemplate(xorKeyHex, aesKeyHex string, statusLabel, logLabel *w
 		return
 	}
 
-	mainContent := strings.ReplaceAll(string(templateContent), "%KEYXOR%", xorKeyHex)
-	mainContent = strings.ReplaceAll(mainContent, "%KEYAES%", aesKeyHex)
+	logLabel.SetText(logLabel.Text + fmt.Sprintf("[+] Length of encrypted AES key: %d\n", len(encryptedAESKey)))
+	logLabel.SetText(logLabel.Text + fmt.Sprintf("[+] Length of encrypted XOR key: %d\n", len(encryptedXORKey)))
+	logLabel.SetText(logLabel.Text + fmt.Sprintf("[+] Length of re-encryption key: %d\n", len(reEncryptKeyHex)))
+
+	replacements := map[string]string{
+		"%KEYAES%":    encryptedAESKey,
+		"%KEYXOR%":    encryptedXORKey,
+		"%XORAESKEY%": reEncryptKeyHex,
+	}
+
+	mainContent := string(templateContent)
+	for placeholder, value := range replacements {
+		mainContent = strings.ReplaceAll(mainContent, placeholder, value)
+	}
 
 	if err := ioutil.WriteFile("../main.go", []byte(mainContent), 0644); err != nil {
 		statusLabel.SetText(fmt.Sprintf("[-] Failed to write main.go file: %v", err))
@@ -294,16 +348,16 @@ func replaceKeysInTemplate(xorKeyHex, aesKeyHex string, statusLabel, logLabel *w
 
 func aesEncrypt(plaintext, key []byte) ([]byte, error) {
 	if len(key) != 32 {
-		return nil, fmt.Errorf("invalid AES key length: must be 32 bytes (AES-256)")
+		return nil, fmt.Errorf("[-] invalid AES key length: must be 32 bytes (AES-256)")
 	}
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create AES cipher: %v", err)
+		return nil, fmt.Errorf("[-] failed to create AES cipher: %v", err)
 	}
 	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
 	iv := ciphertext[:aes.BlockSize]
 	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		return nil, fmt.Errorf("failed to generate IV: %v", err)
+		return nil, fmt.Errorf("[-] failed to generate IV: %v", err)
 	}
 	stream := cipher.NewCFBEncrypter(block, iv)
 	stream.XORKeyStream(ciphertext[aes.BlockSize:], plaintext)
@@ -313,7 +367,7 @@ func aesEncrypt(plaintext, key []byte) ([]byte, error) {
 func xorEncrypt(data, key []byte) ([]byte, error) {
 	keyLen := len(key)
 	if keyLen == 0 {
-		return nil, fmt.Errorf("invalid XOR key length: key cannot be empty")
+		return nil, fmt.Errorf("[-] invalid XOR key length: key cannot be empty")
 	}
 	for i := 0; i < len(data); i++ {
 		data[i] ^= key[i%keyLen]
