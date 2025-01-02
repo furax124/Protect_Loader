@@ -32,7 +32,7 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 - [X] Phantom technique to suspend event logs
 - [X] Unhooking
 - [ ] Call Stack spoofing
-- [ ] Obfuscate IAT table imports
+- [ ] Obfuscate IAT table imports you can use [this](https://github.com/furax124/UPX_Compress_And_Patcher)
 - [ ] Polymorphic code
 - [ ] Remote shellcode to avoid detection
 - [ ] Encrypt XOR and AES keys in `main.go`
@@ -52,6 +52,7 @@ Garble -literals -seed=random -tiny build -ldflags="-w -s -H=windowsgui -buildid
 
 - Protect Loader actually bypass runtime avast detection as 29/12/2024.
 - In the GUI and subfolder there is a lot of PE file (exe) if you don't trust them,feel free to download them from their official repo.
+- In complementary you can use [this](https://github.com/furax124/UPX_Compress_And_Patcher) to obfuscate the IAT table with UPX and auto patch
 
 ## Credit
 
