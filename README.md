@@ -35,7 +35,7 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 - [ ] Obfuscate IAT table imports you can use [this](https://github.com/furax124/UPX_Compress_And_Patcher)
 - [ ] Polymorphic code
 - [ ] Remote shellcode to avoid detection
-- [ ] Encrypt XOR and AES keys in `main.go`
+- [X] Encrypt XOR and AES keys in `main.go`
 - [ ] Sign shellcode and loader with a certificate
 
 
