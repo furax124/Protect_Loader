@@ -91,7 +91,7 @@ func createGUI() fyne.Window {
 		selectFile(fileEntry, statusLabel, logLabel, scrollableLog)
 	})
 
-	encryptButton := widget.NewButton("Encrypt", func() {
+	encryptButton := widget.NewButton("Encrypt and Build", func() {
 		encryptFile(fileEntry.Text, statusLabel, logLabel, scrollableLog)
 	})
 
@@ -162,7 +162,6 @@ func selectFile(fileEntry *widget.Entry, statusLabel, logLabel *widget.Label, sc
 	}
 	fileEntry.SetText(filename)
 	statusLabel.SetText("[+] File selected: " + filename)
-	logLabel.SetText(logLabel.Text + "[+] File selected: " + filename + "\n")
 	scrollableLog.ScrollToBottom()
 }
 
@@ -199,6 +198,17 @@ func encryptFile(filename string, statusLabel, logLabel *widget.Label, scrollabl
 	scrollableLog.ScrollToBottom()
 
 	cleanupFiles([]string{binFile, shellcodeFile}, logLabel)
+
+	logLabel.SetText(logLabel.Text + "[+] Building final executable...\n")
+	buildmain()
+	logLabel.SetText(logLabel.Text + "[+] Final executable built successfully\n")
+}
+
+func buildmain() error {
+	if err := os.Chdir(".."); err != nil {
+		return err
+	}
+	return runCommand("garble", "-literals", "-seed=random", "-tiny", "build", "-ldflags=-w -s -H=windowsgui -buildid=", "-trimpath", "-o", "Protect_Loader.exe")
 }
 
 func runCommand(name string, arg ...string) error {
