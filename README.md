@@ -72,7 +72,7 @@ Garble -literals -seed=random -tiny build -ldflags="-w -s -H=windowsgui -buildid
 
 ## Authors
 
-- [@furax124](https://github.com/furax124)
+- [@furax124](https://github.com/furax124).
 
 
 ## License
