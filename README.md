@@ -47,11 +47,7 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 
 - Run the GUI.bat 
 - Select your PE file
-- and compile it with this command 
-```sh
-Garble -literals -seed=random -tiny build -ldflags="-w -s -H=windowsgui -buildid=" -trimpath
-```
-
+- The GUI will compile it automatically (may take some time)
 ## Notes:
 
 - Protect Loader actually bypass runtime Avast and Windows Defender detection as 29/12/2024.
