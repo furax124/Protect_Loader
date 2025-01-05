@@ -49,8 +49,6 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 - Select your PE file
 - The GUI will compile it automatically (may take some time)
 ## Notes:
-
-- Protect Loader actually bypass runtime Avast and Windows Defender detection as 29/12/2024.
 - In the GUI and subfolder there is a lot of PE file (exe) if you don't trust them,feel free to download them from their official repo.
 - In complementary you can use [this](https://github.com/furax124/UPX_Compress_And_Patcher) to obfuscate the IAT table with UPX and auto patch
 - If you want to debug make sure to remove the elevation code from main.go
