@@ -67,7 +67,7 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 ![App Screenshot](https://github.com/furax124/Protect_Loader/blob/main/GUI/Assets/Preview.png)
 
 ## AV detection (may increase) as of 6/01/2025
-- [VirusTotal](https://www.virustotal.com/gui/file/55dba69fb7c4948f5e9b517270b8db32eaae4d39b0ccf5316f638951e831693d)
+- [VirusTotal](https://www.virustotal.com/gui/file/55dba69fb7c4948f5e9b517270b8db32eaae4d39b0ccf5316f638951e831693d) as you can see even with no anti debug or anti vm. Detection rate is still good enough to be used
 ![image](https://github.com/user-attachments/assets/a80c73d7-0a4a-45df-a4e6-e629c0e6e9fc)
 
 - Avast one Runtime:
@@ -78,6 +78,9 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 
 - [@furax124](https://github.com/furax124)
 
+## Disclaimer !
+
+- This tool is entended to be used for educational purpose,I don't take any responsability about what you do with this software
 
 ## License
 
