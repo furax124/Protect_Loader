@@ -9,7 +9,7 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 ## Features
 - **Shellcode Loading**: Secure shellcode loading using apc method.
 - **GUI**: User interface created with Fyne.
-- **Obfuscation**: Code obfuscation with [garble](https://github.com/burrowers/garble).
+- **Obfuscation**: Code obfuscation with [garble](https://github.com/burrowers/garble) with optionnaly his controlflow (need to set the environment variable GARBLE_EXPERIMENTAL_CONTROLFLOW=1).
 - **Indirect Syscalls**: Use of indirect syscalls by [acheron](https://github.com/f1zm0/acheron) for evasion.
 - **Api ashing**: [Acheron](https://github.com/f1zm0/acheron) package have a integrated api hashing for evasion
 - **Bypass AMSI and EDR**: Techniques to bypass AMSI and EDR.
@@ -39,7 +39,7 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 - [X] Encrypt XOR and AES keys in `main.go`
 - [ ] Sign shellcode and loader with a certificate
 - [ ] Enchance the sleep duration to sleep obfuscation
-- [ ] Adding control flow obfuscation with [garble](https://github.com/burrowers/garble/blob/master/docs/CONTROLFLOW.md)
+- [X] Adding control flow obfuscation with [garble](https://github.com/burrowers/garble/blob/master/docs/CONTROLFLOW.md)
 - [ ] Support of shellcode file (.bin)
 - [ ]  Add .ico support for the generated PE file
 
