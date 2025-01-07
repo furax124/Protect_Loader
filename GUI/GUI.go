@@ -364,6 +364,10 @@ func encryptFile(filename string, statusLabel, logLabel *widget.Label, scrollabl
 	logLabel.SetText(logLabel.Text + "[+] Building final executable...\n")
 	buildmain()
 	logLabel.SetText(logLabel.Text + "[+] Final executable built successfully\n")
+	if err := os.Chdir("GUI"); err != nil {
+		logLabel.SetText(logLabel.Text + fmt.Sprintf("[-] Failed go in the prevouis path: %v\n", err))
+	}
+	logLabel.SetText(logLabel.Text + "[+] Ready to Build Again !\n")
 }
 
 func buildmain() error {
