@@ -5,6 +5,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -17,13 +18,32 @@ import (
 	"image/color"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"strings"
 	"syscall"
+	"unsafe"
+
+	"main/utils/controlflow"
+)
+
+var (
+	user32          = syscall.NewLazyDLL("user32.dll")
+	procMessageBoxW = user32.NewProc("MessageBoxW")
 )
 
 type customTheme struct{}
+
+type Config struct {
+	ControlFlowEnabled bool `json:"control_flow_enabled"`
+}
+
+const (
+	MB_ICONWARNING = 0x30
+	MB_YESNO       = 0x04
+	IDYES          = 6
+)
 
 func (t customTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
 	switch name {
@@ -50,6 +70,15 @@ func (t customTheme) Size(name fyne.ThemeSizeName) float32 {
 	return theme.DefaultTheme().Size(name)
 }
 
+func messageBox(title, text string, style uintptr) int {
+	ret, _, _ := procMessageBoxW.Call(
+		0,
+		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(text))),
+		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(title))),
+		style)
+	return int(ret)
+}
+
 func hideConsoleWindow() {
 	var kernel32 = syscall.NewLazyDLL("kernel32.dll")
 	var getConsoleWindow = kernel32.NewProc("GetConsoleWindow")
@@ -58,6 +87,49 @@ func hideConsoleWindow() {
 	hwnd, _, _ := getConsoleWindow.Call()
 	const SW_HIDE = 0
 	showWindow.Call(hwnd, uintptr(SW_HIDE))
+}
+
+func saveConfig(config Config) error {
+	file, err := os.Create("config.json")
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	return encoder.Encode(config)
+}
+
+func loadConfig() (Config, error) {
+	var config Config
+	file, err := os.Open("config.json")
+	if err != nil {
+		if os.IsNotExist(err) {
+			config = Config{ControlFlowEnabled: false}
+			err = saveConfig(config)
+			if err != nil {
+				return config, fmt.Errorf("[-] failed to create config file: %v", err)
+			}
+			return config, nil
+		}
+		return config, err
+	}
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(&config)
+	if err != nil {
+		if err == io.EOF {
+			config = Config{ControlFlowEnabled: false}
+			err = saveConfig(config)
+			if err != nil {
+				return config, fmt.Errorf("[-] failed to save default config: %v", err)
+			}
+			return config, nil
+		}
+		return config, err
+	}
+	return config, nil
 }
 
 func createGUI() fyne.Window {
@@ -95,6 +167,95 @@ func createGUI() fyne.Window {
 		encryptFile(fileEntry.Text, statusLabel, logLabel, scrollableLog)
 	})
 
+	optionButton := widget.NewButton("Select Feature", func() {
+		optionsWindow := fyne.CurrentApp().NewWindow("Select Feature")
+		optionsWindow.Resize(fyne.NewSize(300, 200))
+
+		exteriorRect := canvas.NewRectangle(color.NRGBA{R: 15, G: 15, B: 15, A: 255})
+		exteriorRect.CornerRadius = 16
+		exteriorRect.SetMinSize(fyne.NewSize(300, 200))
+
+		interiorRect := canvas.NewRectangle(color.NRGBA{R: 25, G: 25, B: 25, A: 255})
+		interiorRect.CornerRadius = 12
+		interiorRect.SetMinSize(fyne.NewSize(280, 180))
+
+		var option1Checkbox *widget.Check
+
+		config, err := loadConfig()
+		if err != nil {
+			log.Fatalf("Failed to load config: %v", err)
+		}
+
+		option1Checkbox = widget.NewCheck("ControlFlow Obfuscation", func(checked bool) {
+			if checked && !config.ControlFlowEnabled {
+				result := messageBox("Warning", "Are you sure you want to enable ControlFlow Obfuscation? It will increase the delay execution but will improve AV evasion", MB_ICONWARNING|MB_YESNO)
+				if result == IDYES {
+					statusLabel.SetText("[+] Feature selected and Activated: ControlFlow")
+					err := ControlFlow.EnableControlflow(logLabel)
+					if err != nil {
+						logLabel.SetText(fmt.Sprintf("[-] Error enabling ControlFlow: %v", err))
+						option1Checkbox.SetChecked(false)
+					} else {
+						config.ControlFlowEnabled = true
+					}
+				} else {
+					option1Checkbox.SetChecked(false)
+					config.ControlFlowEnabled = false
+				}
+			} else if !checked {
+				err := ControlFlow.DisableControlflow(logLabel)
+				if err != nil {
+					logLabel.SetText(fmt.Sprintf("[-] Error disabling ControlFlow: %v", err))
+				}
+				statusLabel.SetText("[+] Feature has been disabled by user: ControlFlow")
+				config.ControlFlowEnabled = false
+			}
+
+			err := saveConfig(config)
+			if err != nil {
+				logLabel.SetText(fmt.Sprintf("Error saving config: %v", err))
+			}
+		})
+		option1Checkbox.SetChecked(config.ControlFlowEnabled)
+
+		var option2Checkbox *widget.Check
+		option2Checkbox = widget.NewCheck("WIP", func(checked bool) {
+			if checked {
+				statusLabel.SetText("[+] Feature selected: WIP")
+				//WIP
+			}
+		})
+
+		var option3Checkbox *widget.Check
+		option3Checkbox = widget.NewCheck("WIP", func(checked bool) {
+			if checked {
+				statusLabel.SetText("[+] Feature selected: WIP")
+				//WIP
+			}
+		})
+
+		optionsContent := container.NewVBox(
+			container.NewCenter(option1Checkbox),
+			container.NewCenter(option2Checkbox),
+			container.NewCenter(option3Checkbox),
+		)
+
+		interiorContainer := container.NewPadded(
+			container.NewMax(
+				interiorRect,
+				optionsContent,
+			),
+		)
+
+		finalContent := container.NewMax(
+			exteriorRect,
+			interiorContainer,
+		)
+
+		optionsWindow.SetContent(finalContent)
+		optionsWindow.Show()
+	})
+
 	leftPanel := container.NewVBox(
 		container.NewPadded(title),
 		layout.NewSpacer(),
@@ -102,6 +263,7 @@ func createGUI() fyne.Window {
 		fileEntry,
 		selectFileButton,
 		encryptButton,
+		optionButton,
 		statusLabel,
 		layout.NewSpacer(),
 	)
