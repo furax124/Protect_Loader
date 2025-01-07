@@ -113,7 +113,7 @@ func main() {
 	fmt.Println("[+] Process elevated")
 
 	rand.Seed(time.Now().UnixNano())
-	sleepDuration := time.Duration(rand.Intn(15)+1) * time.Second
+	sleepDuration := time.Duration(rand.Intn(15)+10) * time.Second
 	fmt.Printf("[+] Sleeping for %v\n", sleepDuration)
 	time.Sleep(sleepDuration)
 	fmt.Println("[+] Woke Up ... Execution Continues")
