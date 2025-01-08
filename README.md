@@ -33,7 +33,6 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 - [X] Phantom technique to suspend event logs
 - [X] Unhooking
 - [ ] Call Stack spoofing
-- [ ] Obfuscate IAT table imports you can use [this](https://github.com/furax124/UPX_Compress_And_Patcher)
 - [ ] Polymorphic code
 - [ ] Remote shellcode to avoid detection
 - [X] Encrypt XOR and AES keys in `main.go`
