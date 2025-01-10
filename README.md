@@ -41,6 +41,7 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 - [X] Adding control flow obfuscation with [garble](https://github.com/burrowers/garble/blob/master/docs/CONTROLFLOW.md)
 - [ ] Support of shellcode file (.bin)
 - [ ] Anti debug/Anti vm
+- [ ] spamming of admin prompt
 - [ ] Add .ico support for the generated PE file
 
 ## How to use it
