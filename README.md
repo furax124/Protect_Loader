@@ -22,6 +22,8 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 - **Key Encryption**: The key generated is encrypted using XOR to prevent his extraction
 
 ## Roadmap
+- 🚧 = Priority Features
+
 - [X] Create a GUI with Fyne
 - [ ] Rework it to be more user-friendly (need to add option and bunch of things)
 - [X] Make the code obfuscation with garble
@@ -36,7 +38,7 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 - [ ] Polymorphic code
 - [ ] Remote shellcode to avoid detection
 - [X] Encrypt XOR and AES keys in `main.go`
-- [ ] Sign shellcode and loader with a certificate
+- [ ] Sign shellcode and loader with a certificate 🚧
 - [ ] Enchance the sleep duration to sleep obfuscation
 - [X] Adding control flow obfuscation with [garble](https://github.com/burrowers/garble/blob/master/docs/CONTROLFLOW.md)
 - [ ] Support of shellcode file (.bin)
