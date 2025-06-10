@@ -54,9 +54,9 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 ## Notes:
 - In the GUI and subfolder there is a lot of PE file (exe) if you don't trust them,feel free to download them from their official repo.
 - In complementary you can use [this](https://github.com/furax124/UPX_Compress_And_Patcher) to obfuscate the IAT table with UPX and auto patch
-- ⚠️⚠️⚠️ In order to the GUI to work correctly you need to have CGO enable (you can use [this](https://github.com/ehsan18t/easy-mingw-installer/tree/main?tab=readme-ov-file) to facilate the installation) and you will also need [Git](https://git-scm.com/downloads/win) installed
+- ⚠️⚠️ In order to the GUI to work correctly you need to have CGO enable (you can use [this](https://github.com/ehsan18t/easy-mingw-installer/tree/main?tab=readme-ov-file) to facilate the installation) and you will also need [Git](https://git-scm.com/downloads/win) installed
 - If you want to debug make sure to remove the elevation code from main.go
-
+- ⚠️ IF you want to use Control flow obfuscation you will need set the environment variable GARBLE_EXPERIMENTAL_CONTROLFLOW=1
 ## Credit
 
  - [Hooka Shellcode loader](https://github.com/D3Ext/Hooka) - for the code i use 
