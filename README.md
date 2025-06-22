@@ -82,7 +82,7 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 
 ## Disclaimer !
 
-- This tool is entended to be used for educational purpose,I don't take any responsability about what you do with this software
+- This tool is entended to be used for educational purpose,I don't take any responsability about what you do with this software (and should be not used since its unstable)
 
 ## License
 
