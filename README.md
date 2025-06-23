@@ -44,6 +44,7 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 - [ ] Support of shellcode file (.bin)
 - [ ] Anti debug/Anti vm
 - [ ] Spamming of admin prompt
+- [ ] Wiki
 - [ ] Add .ico support for the generated PE file
 
 ## How to use it
