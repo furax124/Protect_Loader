@@ -188,7 +188,7 @@ func createGUI() fyne.Window {
 
 		option1Checkbox = widget.NewCheck("ControlFlow Obfuscation", func(checked bool) {
 			if checked && !config.ControlFlowEnabled {
-				result := messageBox("Warning", "Are you sure you want to enable ControlFlow Obfuscation? It will increase the delay execution but will improve AV evasion", MB_ICONWARNING|MB_YESNO)
+				result := messageBox("Warning/Unstable", "Are you sure you want to enable ControlFlow Obfuscation? It will increase the delay execution but will improve AV evasion", MB_ICONWARNING|MB_YESNO)
 				if result == IDYES {
 					statusLabel.SetText("[+] Feature selected and Activated: ControlFlow")
 					err := ControlFlow.EnableControlflow(logLabel)
