@@ -42,7 +42,7 @@ func verifyDataIntegrity(data []byte, stage string) bool {
 func aesDecrypt(ciphertext, key []byte) ([]byte, error) {
 	log.Printf("[*] Starting AES decryption - Input size: %d bytes", len(ciphertext))
 
-	// Ensure the decrypted AES key is of a valid size
+
 	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
 		return nil, fmt.Errorf("[-] Invalid AES key size: %d bytes", len(key))
 	}
