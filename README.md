@@ -18,7 +18,7 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 - **Block Non-Microsoft DLLs**: Blocking the injection of non-Microsoft DLLs.
 - **Phantom Technique**: Suspension of event logs.
 - **Unhooking**: Removal of hooks for av evasion.
-- **PE file To Shellcode**: The PE file is automatically transformed into a .bin using [Donut](https://github.com/TheWover/donut) and encoded using [Shikata ga nai](https://github.com/EgeBalci/sgn) and encrypted using two layer of encryption (aes and xor)
+- **PE file To Shellcode**: The PE file is automatically transformed into a .bin using [Donut](https://github.com/TheWover/donut) and encoded using [Shikata ga nai](https://github.com/EgeBalci/sgn) and encrypted using two layer of encryption (aes-cfb and xor)
 - **Key Encryption**: The key generated is encrypted using XOR to prevent his extraction
 
 ## Roadmap
@@ -38,7 +38,7 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 - [ ] Call Stack spoofing
 - [ ] Polymorphic code
 - [ ] Remote shellcode to avoid detection
-- [X] Encrypt XOR and AES keys in `main.go`
+- [X] Encrypt XOR and AES-CFB keys in `main.go`
 - [ ] Sign shellcode and loader with a certificate 🚧
 - [ ] Enchance the sleep duration (AV accelerate time in a sandbox)
 - [X] Adding control flow obfuscation with [garble](https://github.com/burrowers/garble/blob/master/docs/CONTROLFLOW.md)
