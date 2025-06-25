@@ -8,7 +8,7 @@ import (
 
 	"golang.org/x/sys/windows"
 )
-//.garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
+//garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func IsAdmin() bool {
 	var sid *windows.SID
 	// Create a SID for the BUILTIN\Administrators group.
@@ -26,7 +26,7 @@ func IsAdmin() bool {
 
 	return member
 }
-//.garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
+//garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func Elevate() error {
 	if IsAdmin() {
 		return nil

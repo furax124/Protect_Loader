@@ -30,6 +30,8 @@ type PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY struct {
 }
 
 // block non Microsoft-signed DLLs to inject in current process
+//
+//garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func BlockDLLs() error {
 	kernel32 := windows.NewLazySystemDLL("kernel32.dll")
 	SetProcessMitigationPolicy := kernel32.NewProc("SetProcessMitigationPolicy")

