@@ -120,3 +120,4 @@ func ExecuteAllPatchesIndirect() error {
 }
 
 //light modification from this code https://www.scriptchildie.com/evasion/av-bypass/5.-amsi-bypass and add indirect syscalls
+//I remove unhooking because it was too flaged as malicious and i think that is way better to only use archeron and simpler
