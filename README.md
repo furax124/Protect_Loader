@@ -40,7 +40,7 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 - [ ] Remote shellcode to avoid detection
 - [X] Encrypt XOR and AES-CFB keys in `main.go`
 - [ ] Sign shellcode and loader with a certificate 🚧
-- [X] Enchance the sleep duration (AV accelerate time in a sandbox)
+- [X] Enchance the sleep duration (AV accelerate time in a [sandbox](https://www.scriptchildie.com/evasion/av-bypass/3.-delay-execution))
 - [X] Adding control flow obfuscation with [garble](https://github.com/burrowers/garble/blob/master/docs/CONTROLFLOW.md)
 - [X] Support of shellcode file (.bin)
 - [ ] Anti debug/Anti vm
