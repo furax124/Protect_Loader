@@ -87,3 +87,4 @@ func ExecuteAllPatches() error {
 }
 
 //light modification from this code https://www.scriptchildie.com/evasion/av-bypass/5.-amsi-bypass
+//TODO: Need to implement indirect syscalls to get rid of ntdll unhooking
