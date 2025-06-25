@@ -34,7 +34,7 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 - [X] Add random delays
 - [X] Block the injection of non-Microsoft DLLs
 - [X] Phantom technique to suspend event logs
-- [X] Unhooking
+- [ ] Remove unhooking method (too monitored by EDR/AV,indirect syscalls is better
 - [ ] Call Stack spoofing
 - [ ] Polymorphic code
 - [ ] Remote shellcode to avoid detection
