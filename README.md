@@ -42,6 +42,7 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 - [X] Enchance the sleep duration (AV accelerate time in a [sandbox](https://www.scriptchildie.com/evasion/av-bypass/3.-delay-execution))
 - [X] Adding control flow obfuscation with [garble](https://github.com/burrowers/garble/blob/master/docs/CONTROLFLOW.md)
 - [X] Support of shellcode file (.bin)
+- [ ] Fix IAT (Import Adress Table) detection by post processing the PE file
 - [ ] Anti debug/Anti vm
 - [ ] Spamming of admin prompt
 - [ ] Wiki
