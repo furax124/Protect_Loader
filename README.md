@@ -34,17 +34,16 @@ Protect Loader is a shellcode loader written in pure golang designed to provide 
 - [X] Block the injection of non-Microsoft DLLs
 - [X] Phantom technique to suspend event logs
 - [X] Remove unhooking method (too monitored by EDR/AV,indirect syscalls is better)
-- [ ] Call Stack spoofing
-- [ ] Polymorphic code
+- [ ] Call Stack spoofing ( research )
+- [ ] Polymorphic code ( research )
 - [ ] Remote shellcode to avoid detection
 - [X] Encrypt XOR and AES-CFB keys in `main.go`
 - [ ] Sign shellcode and loader with a certificate 🚧
 - [X] Enchance the sleep duration (AV accelerate time in a [sandbox](https://www.scriptchildie.com/evasion/av-bypass/3.-delay-execution))
 - [X] Adding control flow obfuscation with [garble](https://github.com/burrowers/garble/blob/master/docs/CONTROLFLOW.md)
 - [X] Support of shellcode file (.bin)
-- [ ] Fix IAT (Import Adress Table) detection by post processing the PE file
+- [ ] Fix IAT (Import Adress Table) detection by post processing the PE file ( could be done by patching golang itself)
 - [ ] Anti debug/Anti vm
-- [ ] Spamming of admin prompt
 - [ ] Wiki
 - [ ] Add .ico support for the generated PE file
 
